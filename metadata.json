@@ -1,0 +1,10 @@
+{
+  "name": "Counterfeit Medicine Detector",
+  "description": "AI-powered pharmaceutical verification system for smartphone camera scanning, QR code decoding, and deep packaging analysis to detect counterfeit drugs.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
