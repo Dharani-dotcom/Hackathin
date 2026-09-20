@@ -49,6 +49,7 @@ export interface SampleMedicine {
   category: string;
   expectedStatus: VerificationStatus;
   badgeColor: string;
+  riskLevel?: RiskLevel;
   description: string;
   qrPayload: string;
   batchNumber: string;

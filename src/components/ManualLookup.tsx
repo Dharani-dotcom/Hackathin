@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Sparkles, RefreshCw, AlertCircle, FileText } from "lucide-react";
+import { Search, Sparkles, RefreshCw } from "lucide-react";
 import { ManualEntryData } from "../types";
 
 interface ManualLookupProps {
@@ -61,40 +61,40 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
           <Search className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white">Manual Batch & GTIN Lookup</h3>
-          <p className="text-[11px] text-slate-400">
-            For unreadable or scratched QR codes on foil packaging
+          <h3 className="text-sm font-bold text-slate-900">Manual Batch & GTIN Lookup</h3>
+          <p className="text-[11px] text-slate-500">
+            Verify damaged or scratched 2D barcodes by entering carton details
           </p>
         </div>
       </div>
 
       {/* Quick Fill Shortcuts */}
-      <div className="mb-4 flex items-center gap-1.5 overflow-x-auto text-[10px]">
-        <span className="text-slate-500 font-medium">Quick Fill:</span>
+      <div className="mb-4 flex items-center gap-1.5 overflow-x-auto text-[10px] pb-1">
+        <span className="text-slate-400 font-medium">Presets:</span>
         <button
           type="button"
           onClick={() => handleQuickFill("authentic")}
-          className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+          className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors font-medium whitespace-nowrap"
         >
           Valid GSK Batch
         </button>
         <button
           type="button"
           onClick={() => handleQuickFill("counterfeit")}
-          className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+          className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100 transition-colors font-medium whitespace-nowrap"
         >
           Flagged MP5B060
         </button>
         <button
           type="button"
           onClick={() => handleQuickFill("recalled")}
-          className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+          className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors font-medium whitespace-nowrap"
         >
           Recalled C9103
         </button>
@@ -102,7 +102,7 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
             Medicine Brand / Product Name
           </label>
           <input
@@ -111,14 +111,14 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
             value={formData.medicineName}
             onChange={handleChange}
             placeholder="e.g. Augmentin 625mg or Lipitor"
-            className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+            className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-              Batch / Lot Number <span className="text-rose-400">*</span>
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              Batch / Lot Number <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -127,12 +127,12 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
               onChange={handleChange}
               placeholder="e.g. AUG2025B1"
               required
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors uppercase font-mono"
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors uppercase font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
               Expiry Date
             </label>
             <input
@@ -140,15 +140,15 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
               name="expiryDate"
               value={formData.expiryDate}
               onChange={handleChange}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-              GTIN / Barcode (14 digits)
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              GTIN Barcode (14 digits)
             </label>
             <input
               type="text"
@@ -156,12 +156,12 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
               value={formData.gtin}
               onChange={handleChange}
               placeholder="05012345678900"
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
               Stated Manufacturer
             </label>
             <input
@@ -170,7 +170,7 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
               value={formData.manufacturer}
               onChange={handleChange}
               placeholder="e.g. Pfizer, GSK, Cipla"
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
             />
           </div>
         </div>
@@ -178,16 +178,16 @@ export const ManualLookup: React.FC<ManualLookupProps> = ({
         <button
           type="submit"
           disabled={isAnalyzing}
-          className="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          className="w-full mt-2 py-2.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors"
         >
           {isAnalyzing ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Checking Regulatory Registries...</span>
+              <span>Checking Firestore & Registries...</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 fill-slate-950" />
+              <Sparkles className="w-4 h-4" />
               <span>Verify Batch Authenticity</span>
             </>
           )}

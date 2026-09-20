@@ -1,0 +1,222 @@
+{
+  "entities": {
+    "Medicine": {
+      "title": "Medicine",
+      "description": "Verified pharmaceutical product in the national and global drug verification registry",
+      "type": "object",
+      "properties": {
+        "gtin": {
+          "type": "string",
+          "description": "14-digit GS1 Global Trade Item Number (barcode)",
+          "pattern": "^[0-9]{14}$"
+        },
+        "medicineName": {
+          "type": "string",
+          "description": "Commercial brand name of the drug",
+          "maxLength": 150
+        },
+        "genericName": {
+          "type": "string",
+          "description": "Active Pharmaceutical Ingredient (API) composition",
+          "maxLength": 200
+        },
+        "manufacturer": {
+          "type": "string",
+          "description": "Licensed pharmaceutical manufacturer name",
+          "maxLength": 150
+        },
+        "dosage": {
+          "type": "string",
+          "description": "Dosage form and strength (e.g., 500mg Film-coated Tablet)",
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "Therapeutic medical category (Antibiotic, Antimalarial, Cardiovascular, etc.)",
+          "maxLength": 80
+        },
+        "regNumber": {
+          "type": "string",
+          "description": "Official FDA / National Drug Regulatory license number",
+          "maxLength": 60
+        },
+        "standardBatchFormat": {
+          "type": "string",
+          "description": "Expected batch format regex or pattern descriptor",
+          "maxLength": 100
+        },
+        "isRecalled": {
+          "type": "boolean",
+          "description": "Whether any batch of this medicine is under active safety recall"
+        },
+        "knownCounterfeitBatches": {
+          "type": "array",
+          "description": "List of known counterfeit batch numbers reported by WHO / Regulatory authorities"
+        },
+        "securityFeatures": {
+          "type": "array",
+          "description": "Authentic packaging physical security features"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when added to registry"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of last registry update"
+        }
+      },
+      "required": ["gtin", "medicineName", "genericName", "manufacturer", "dosage", "category"]
+    },
+    "VerificationLog": {
+      "title": "VerificationLog",
+      "description": "Audit record of a medicine scan or verification session",
+      "type": "object",
+      "properties": {
+        "verificationId": {
+          "type": "string",
+          "description": "Unique verification record ID",
+          "maxLength": 80
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of the scan"
+        },
+        "status": {
+          "type": "string",
+          "description": "Outcome status of the verification",
+          "enum": ["AUTHENTIC", "SUSPECT_COUNTERFEIT", "RECALLED_BATCH", "EXPIRED", "UNVERIFIED"]
+        },
+        "confidenceScore": {
+          "type": "number",
+          "description": "Calculated confidence score percentage (0-100)"
+        },
+        "riskLevel": {
+          "type": "string",
+          "description": "Assessed patient health risk level",
+          "enum": ["LOW", "MODERATE", "HIGH", "CRITICAL"]
+        },
+        "medicineName": {
+          "type": "string",
+          "description": "Identified drug name",
+          "maxLength": 150
+        },
+        "manufacturer": {
+          "type": "string",
+          "description": "Identified drug manufacturer",
+          "maxLength": 150
+        },
+        "gtin": {
+          "type": "string",
+          "description": "Decoded GTIN identifier",
+          "maxLength": 20
+        },
+        "batchNumber": {
+          "type": "string",
+          "description": "Decoded batch or lot number",
+          "maxLength": 50
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "Decoded expiration date",
+          "maxLength": 20
+        },
+        "serialNumber": {
+          "type": "string",
+          "description": "Decoded unit serial number",
+          "maxLength": 50
+        },
+        "qrCodeText": {
+          "type": "string",
+          "description": "Raw scanned GS1 DataMatrix or QR payload",
+          "maxLength": 1000
+        },
+        "summary": {
+          "type": "string",
+          "description": "Clinical and forensic findings summary",
+          "maxLength": 1000
+        },
+        "redFlags": {
+          "type": "array",
+          "description": "List of detected anomalies or discrepancies"
+        }
+      },
+      "required": ["verificationId", "timestamp", "status", "confidenceScore", "riskLevel"]
+    },
+    "CounterfeitReport": {
+      "title": "CounterfeitReport",
+      "description": "Incident report submitted for suspect, falsified, or recalled medication",
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "description": "Unique incident report ID",
+          "maxLength": 80
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of report submission"
+        },
+        "medicineName": {
+          "type": "string",
+          "description": "Reported medication name",
+          "maxLength": 150
+        },
+        "batchNumber": {
+          "type": "string",
+          "description": "Batch number on suspect package",
+          "maxLength": 50
+        },
+        "purchaseLocation": {
+          "type": "string",
+          "description": "Pharmacy, clinic, hospital or vendor location",
+          "maxLength": 200
+        },
+        "pharmacyName": {
+          "type": "string",
+          "description": "Name of dispensing pharmacy or vendor",
+          "maxLength": 150
+        },
+        "city": {
+          "type": "string",
+          "description": "City or region of incident",
+          "maxLength": 100
+        },
+        "suspectedReason": {
+          "type": "string",
+          "description": "Detailed explanation of suspicion (packaging flaw, abnormal color/taste, no QR, barcode mismatch)",
+          "maxLength": 2000
+        },
+        "reporterType": {
+          "type": "string",
+          "description": "Role of reporter",
+          "enum": ["PATIENT", "PHARMACIST", "PHYSICIAN", "DISTRIBUTOR", "HEALTH_INSPECTOR"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Investigation status",
+          "enum": ["SUBMITTED", "UNDER_REVIEW", "ESCALATED_TO_FDA", "RESOLVED"]
+        }
+      },
+      "required": ["reportId", "timestamp", "medicineName", "purchaseLocation", "suspectedReason", "reporterType"]
+    }
+  },
+  "firestore": {
+    "/medicines/{medicineId}": {
+      "schema": "Medicine",
+      "description": "Public read-only registry of genuine approved medicines and anti-counterfeit parameters"
+    },
+    "/verificationLogs/{logId}": {
+      "schema": "VerificationLog",
+      "description": "Audit records of medicine authentications and barcode verifications"
+    },
+    "/counterfeitReports/{reportId}": {
+      "schema": "CounterfeitReport",
+      "description": "User and healthcare provider reports of suspect or falsified pharmaceuticals"
+    }
+  }
+}

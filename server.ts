@@ -104,16 +104,17 @@ const PHARMA_REGISTRY: Record<string, RegEntry> = {
   }
 };
 
-// Curated sample test medicines
+// Curated MVP test medicines for the 3 risk levels (Low, Medium, High)
 const SAMPLE_MEDICINES = [
   {
-    id: "sample-authentic-augmentin",
-    title: "Augmentin 625mg (Authentic)",
+    id: "mvp-low-risk-augmentin",
+    title: "Augmentin 625mg (Low Risk - Authentic)",
     medicineName: "Augmentin 625mg",
-    category: "Antibiotic",
+    category: "Antibacterial / Penicillin",
     expectedStatus: "AUTHENTIC",
     badgeColor: "emerald",
-    description: "Verified genuine GS1 DataMatrix code with valid batch AUG2025B1, active expiry, and verified manufacturer digital link.",
+    riskLevel: "LOW",
+    description: "Verified genuine GS1 DataMatrix code with valid batch AUG2025B1, active expiry, and intact manufacturer holographic security seal.",
     qrPayload: "01050123456789001727123110AUG2025B121GSK492019482",
     batchNumber: "AUG2025B1",
     gtin: "05012345678900",
@@ -122,64 +123,36 @@ const SAMPLE_MEDICINES = [
     imageHint: "Genuine holographic GSK security seal, sharp laser-etched lot number, sealed blister pack."
   },
   {
-    id: "sample-counterfeit-ozempic",
-    title: "Ozempic 1mg Pen (CRITICAL COUNTERFEIT)",
-    medicineName: "Ozempic 1mg/dose",
-    category: "Metabolic / Antidiabetic",
+    id: "mvp-med-risk-panadol",
+    title: "Panadol Extra (Medium Risk - Suspicious Packaging)",
+    medicineName: "Panadol Extra with Optizorb",
+    category: "Analgesic / Pain Relief",
+    expectedStatus: "SUSPICIOUS",
+    badgeColor: "amber",
+    riskLevel: "MEDIUM",
+    description: "Packaging anomaly detected: Non-standard barcode payload, missing blister foil watermark, and unverified supply chain lot PAN-SUSP-01.",
+    qrPayload: "PANADOL-EXTRA-500-SUSP-LOT-PAN-SUSP-01",
+    batchNumber: "PAN-SUSP-01",
+    gtin: "05000167041235",
+    expiryDate: "2026-10-31",
+    manufacturer: "Haleon Consumer Healthcare",
+    imageHint: "Missing Haleon micro-hologram on carton seal, non-standard QR payload format."
+  },
+  {
+    id: "mvp-high-risk-ozempic",
+    title: "Ozempic 1mg Pen (High Risk - Critical Counterfeit)",
+    medicineName: "Ozempic 1mg/dose Pre-filled Pen",
+    category: "Antidiabetic / GLP-1",
     expectedStatus: "SUSPECTED_COUNTERFEIT",
     badgeColor: "rose",
-    description: "High-alert counterfeit batch MP5B060 flagged internationally. Forged serial number, fake font kerning, dangerous insulin substitution.",
+    riskLevel: "HIGH",
+    description: "High-alert counterfeit batch MP5B060 flagged internationally by WHO. Forged serial number, fake font kerning, and lethal insulin substitution.",
     qrPayload: "01057122490014281726051510MP5B06021FAKE992010492",
     batchNumber: "MP5B060",
     gtin: "05712249001428",
     expiryDate: "2026-05-15",
     manufacturer: "Novo Nordisk A/S (Forged)",
     imageHint: "Color deviation on pen dose selector, mismatched needle thread, missing micro-optic security thread."
-  },
-  {
-    id: "sample-recalled-lipitor",
-    title: "Lipitor 20mg (OFFICIAL RECALL)",
-    medicineName: "Lipitor 20mg",
-    category: "Cardiovascular / Statin",
-    expectedStatus: "RECALLED",
-    badgeColor: "amber",
-    description: "Official FDA Class II Recall on batch C9103. Genuine product from Pfizer but flagged for potential glass/plastic particulate hazard.",
-    qrPayload: "01003006942003191726093010C910321PFIZ8493021",
-    batchNumber: "C9103",
-    gtin: "00300694200319",
-    expiryDate: "2026-09-30",
-    manufacturer: "Pfizer Inc.",
-    imageHint: "Original Pfizer packaging with legitimate security seal, but batch C9103 is actively quarantined."
-  },
-  {
-    id: "sample-expired-panadol",
-    title: "Panadol Extra (EXPIRED BATCH)",
-    medicineName: "Panadol Extra with Optizorb",
-    category: "Analgesic / Antipyretic",
-    expectedStatus: "EXPIRED",
-    badgeColor: "yellow",
-    description: "Authentic Haleon product, but expired on December 31, 2023. Degraded active ingredients may cause stomach irritation or reduced potency.",
-    qrPayload: "01050001670412351723123110PAN2021EX21HLN1029384",
-    batchNumber: "PAN2021EX",
-    gtin: "05000167041235",
-    expiryDate: "2023-12-31",
-    manufacturer: "Haleon Consumer Healthcare",
-    imageHint: "Genuine Panadol packaging with valid GTIN, however date check confirms expiration."
-  },
-  {
-    id: "sample-fake-typo-antibiotic",
-    title: "Falsified Antibiotic (Spelling & Checksum Failure)",
-    medicineName: "Amoxicillin 500mg 'Pharamceuticals'",
-    category: "Antibiotic",
-    expectedStatus: "SUSPECTED_COUNTERFEIT",
-    badgeColor: "rose",
-    description: "Packaging contains obvious counterfeit signs: misspelled 'Pharamceuticals', malformed QR code, invalid GTIN checksum, no regulatory NAFDAC/FDA code.",
-    qrPayload: "AMOX-GENERIC-CHEAP-BATCH-999-NO-GS1",
-    batchNumber: "FAKE-AMOX-01",
-    gtin: "99999999999999",
-    expiryDate: "2028-01-01",
-    manufacturer: "Global Pharamceuticals Inc. (Bogus Entity)",
-    imageHint: "Blurry low-res print on carton, uneven blister foil backing, no batch debossing."
   }
 ];
 
@@ -487,10 +460,11 @@ app.post("/api/verify-medicine", async (req, res) => {
 
     const ai = getGeminiClient();
 
-    // If Gemini is available, run multimodal or structured verification
+    // If Gemini is available, run multimodal or structured verification with model fallback & retry
     if (ai) {
-      try {
-        const promptText = `
+      const candidateModels = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+      
+      const promptText = `
 You are an expert pharmaceutical forensic scientist, regulatory packaging auditor, and counterfeit medicine detection specialist.
 Analyze the following medicine data and packaging image (if provided) to determine authenticity, detect counterfeit packaging flaws, check expiration, and identify tampering.
 
@@ -509,7 +483,7 @@ PRE-CHECKS FROM PHARMACEUTICAL REGISTRY:
 - Known Red Flags: ${JSON.stringify(baseResult.redFlags)}
 
 TASK:
-1. Examine the packaging image closely (if attached):
+1. Examine packaging signals & image (if attached):
    - Check typography, font kerning, spelling errors (e.g. "Pharamceuticals", "Maufactured").
    - Check for tamper-evident seals, hologram optical properties, foil embossing, blister pack consistency.
    - Look for fuzzy printing, improper regulatory symbols (Rx, FDA, CE, WHO, Schedule H/X warnings).
@@ -522,161 +496,188 @@ TASK:
 5. List specific security checks, red flags, and concrete action steps for the patient/consumer.
 `;
 
-        const contents: any[] = [];
+      const contents: any[] = [];
 
-        if (imageBase64) {
-          // Extract mime type and clean base64
-          let mimeType = "image/jpeg";
-          let cleanData = imageBase64;
-          if (imageBase64.includes(";base64,")) {
-            const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
-            if (matches) {
-              mimeType = matches[1];
-              cleanData = matches[2];
-            }
+      if (imageBase64) {
+        let mimeType = "image/jpeg";
+        let cleanData = imageBase64;
+        if (imageBase64.includes(";base64,")) {
+          const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (matches) {
+            mimeType = matches[1];
+            cleanData = matches[2];
           }
-          contents.push({
-            inlineData: {
-              mimeType,
-              data: cleanData
-            }
-          });
         }
+        contents.push({
+          inlineData: {
+            mimeType,
+            data: cleanData
+          }
+        });
+      }
 
-        contents.push({ text: promptText });
+      contents.push({ text: promptText });
 
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Gemini request timed out")), 7000)
-        );
+      let aiSuccess = false;
 
-        const response: any = await Promise.race([
-          ai.models.generateContent({
-            model: "gemini-3.8-flash",
-            contents,
-            config: {
-              responseMimeType: "application/json",
-              responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                  status: {
-                    type: Type.STRING,
-                    description: "Status: AUTHENTIC, SUSPECTED_COUNTERFEIT, RECALLED, EXPIRED, TAMPERED, SUSPICIOUS, INSUFFICIENT_DATA"
-                  },
-                  confidenceScore: {
-                    type: Type.NUMBER,
-                    description: "Confidence percentage between 0 and 100"
-                  },
-                  riskLevel: {
-                    type: Type.STRING,
-                    description: "LOW, MEDIUM, HIGH, or CRITICAL"
-                  },
-                  medicineName: {
-                    type: Type.STRING,
-                    description: "Identified commercial brand name of the drug"
-                  },
-                  activeIngredient: {
-                    type: Type.STRING,
-                    description: "Active pharmaceutical ingredient (API)"
-                  },
-                  dosage: {
-                    type: Type.STRING,
-                    description: "Dosage form and strength"
-                  },
-                  manufacturer: {
-                    type: Type.STRING,
-                    description: "Stated pharmaceutical company"
-                  },
-                  gtin: {
-                    type: Type.STRING,
-                    description: "GTIN / Global Trade Item Number"
-                  },
-                  batchNumber: {
-                    type: Type.STRING,
-                    description: "Batch or Lot Number"
-                  },
-                  serialNumber: {
-                    type: Type.STRING,
-                    description: "Unit Serialization Number"
-                  },
-                  expiryDate: {
-                    type: Type.STRING,
-                    description: "Expiry date in YYYY-MM-DD or readable format"
-                  },
-                  isExpired: {
-                    type: Type.BOOLEAN,
-                    description: "Whether the product has passed its expiration date"
-                  },
-                  isRecalled: {
-                    type: Type.BOOLEAN,
-                    description: "Whether the product is subject to an active safety recall"
-                  },
-                  recallDetails: {
-                    type: Type.STRING,
-                    description: "Specific recall reasons if applicable"
-                  },
-                  summary: {
-                    type: Type.STRING,
-                    description: "Plain language summary of authenticity verification findings"
-                  },
-                  securityChecks: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        name: { type: Type.STRING },
-                        status: { type: Type.STRING, description: "PASS, FAIL, WARNING, NOT_APPLICABLE" },
-                        detail: { type: Type.STRING }
-                      },
-                      required: ["name", "status", "detail"]
+      for (const modelName of candidateModels) {
+        if (aiSuccess) break;
+
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error(`Gemini request timeout (${modelName})`)), 12000)
+            );
+
+            const geminiPromise = ai.models.generateContent({
+              model: modelName,
+              contents,
+              config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: Type.OBJECT,
+                  properties: {
+                    status: {
+                      type: Type.STRING,
+                      description: "Status: AUTHENTIC, SUSPECTED_COUNTERFEIT, RECALLED, EXPIRED, TAMPERED, SUSPICIOUS, INSUFFICIENT_DATA"
+                    },
+                    confidenceScore: {
+                      type: Type.NUMBER,
+                      description: "Confidence percentage between 0 and 100"
+                    },
+                    riskLevel: {
+                      type: Type.STRING,
+                      description: "LOW, MEDIUM, HIGH, or CRITICAL"
+                    },
+                    medicineName: {
+                      type: Type.STRING,
+                      description: "Identified commercial brand name of the drug"
+                    },
+                    activeIngredient: {
+                      type: Type.STRING,
+                      description: "Active pharmaceutical ingredient (API)"
+                    },
+                    dosage: {
+                      type: Type.STRING,
+                      description: "Dosage form and strength"
+                    },
+                    manufacturer: {
+                      type: Type.STRING,
+                      description: "Stated pharmaceutical company"
+                    },
+                    gtin: {
+                      type: Type.STRING,
+                      description: "GTIN / Global Trade Item Number"
+                    },
+                    batchNumber: {
+                      type: Type.STRING,
+                      description: "Batch or Lot Number"
+                    },
+                    serialNumber: {
+                      type: Type.STRING,
+                      description: "Unit Serialization Number"
+                    },
+                    expiryDate: {
+                      type: Type.STRING,
+                      description: "Expiry date in YYYY-MM-DD or readable format"
+                    },
+                    isExpired: {
+                      type: Type.BOOLEAN,
+                      description: "Whether the product has passed its expiration date"
+                    },
+                    isRecalled: {
+                      type: Type.BOOLEAN,
+                      description: "Whether the product is subject to an active safety recall"
+                    },
+                    recallDetails: {
+                      type: Type.STRING,
+                      description: "Specific recall reasons if applicable"
+                    },
+                    summary: {
+                      type: Type.STRING,
+                      description: "Plain language summary of authenticity verification findings"
+                    },
+                    securityChecks: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          name: { type: Type.STRING },
+                          status: { type: Type.STRING, description: "PASS, FAIL, WARNING, NOT_APPLICABLE" },
+                          detail: { type: Type.STRING }
+                        },
+                        required: ["name", "status", "detail"]
+                      }
+                    },
+                    redFlags: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                      description: "List of identified suspicious flags or safety issues"
+                    },
+                    actionRecommendations: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                      description: "Step-by-step guidance for the user"
+                    },
+                    packagingAnalysis: {
+                      type: Type.STRING,
+                      description: "Detailed visual and packaging forensic observation"
                     }
                   },
-                  redFlags: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: "List of identified suspicious flags or safety issues"
-                  },
-                  actionRecommendations: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: "Step-by-step guidance for the user"
-                  },
-                  packagingAnalysis: {
-                    type: Type.STRING,
-                    description: "Detailed visual and packaging forensic observation"
-                  }
-                },
-                required: [
-                  "status",
-                  "confidenceScore",
-                  "riskLevel",
-                  "medicineName",
-                  "manufacturer",
-                  "summary",
-                  "securityChecks",
-                  "redFlags",
-                  "actionRecommendations"
-                ]
+                  required: [
+                    "status",
+                    "confidenceScore",
+                    "riskLevel",
+                    "medicineName",
+                    "manufacturer",
+                    "summary",
+                    "securityChecks",
+                    "redFlags",
+                    "actionRecommendations"
+                  ]
+                }
               }
-            }
-          }),
-          timeoutPromise
-        ]);
+            });
 
-        if (response.text) {
-          const aiParsed = JSON.parse(response.text.trim());
-          return res.json({
-            result: {
-              ...baseResult,
-              ...aiParsed,
-              id: baseResult.id,
-              timestamp: baseResult.timestamp,
-              capturedImage: imageBase64 ? imageBase64.substring(0, 100) + "..." : undefined,
-              rawQrData: qrCodeText || baseResult.rawQrData
+            const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+
+            if (response && response.text) {
+              let rawText = response.text.trim();
+              if (rawText.startsWith("```json")) {
+                rawText = rawText.replace(/^```json\s*/, "").replace(/```$/, "").trim();
+              } else if (rawText.startsWith("```")) {
+                rawText = rawText.replace(/^```\s*/, "").replace(/```$/, "").trim();
+              }
+
+              const aiParsed = JSON.parse(rawText);
+              aiSuccess = true;
+              return res.json({
+                result: {
+                  ...baseResult,
+                  ...aiParsed,
+                  id: baseResult.id,
+                  timestamp: baseResult.timestamp,
+                  capturedImage: imageBase64 ? imageBase64.substring(0, 100) + "..." : undefined,
+                  rawQrData: qrCodeText || baseResult.rawQrData
+                }
+              });
             }
-          });
+          } catch (modelErr: any) {
+            const isDemandSpike = modelErr?.message?.includes("high demand") || 
+                                  modelErr?.message?.includes("503") || 
+                                  modelErr?.status === 503 ||
+                                  modelErr?.message?.includes("429");
+            
+            console.warn(`Gemini (${modelName}, attempt ${attempt}) error:`, modelErr?.message || modelErr);
+
+            if (isDemandSpike && attempt < 2) {
+              // Wait 500ms before second attempt
+              await new Promise((resolve) => setTimeout(resolve, 600));
+            } else {
+              break; // Try next fallback model
+            }
+          }
         }
-      } catch (aiErr) {
-        console.error("Gemini analysis error, falling back to rule engine:", aiErr);
       }
     }
 

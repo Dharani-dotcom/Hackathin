@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 80 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidMedicine(data) {
+      return data.keys().hasAll(['gtin', 'medicineName', 'genericName', 'manufacturer', 'dosage', 'category'])
+        && data.gtin is string && data.gtin.size() >= 12 && data.gtin.size() <= 20
+        && data.medicineName is string && data.medicineName.size() > 0 && data.medicineName.size() <= 150
+        && data.genericName is string && data.genericName.size() <= 200
+        && data.manufacturer is string && data.manufacturer.size() <= 150
+        && data.dosage is string && data.dosage.size() <= 100
+        && data.category is string && data.category.size() <= 80;
+    }
+
+    function isValidVerificationLog(data) {
+      return data.keys().hasAll(['verificationId', 'timestamp', 'status', 'confidenceScore', 'riskLevel'])
+        && data.verificationId is string && data.verificationId.size() > 0 && data.verificationId.size() <= 80
+        && data.timestamp is string && data.timestamp.size() <= 40
+        && data.status is string && data.status in ['AUTHENTIC', 'SUSPECT_COUNTERFEIT', 'RECALLED_BATCH', 'EXPIRED', 'UNVERIFIED']
+        && data.confidenceScore is number && data.confidenceScore >= 0 && data.confidenceScore <= 100
+        && data.riskLevel is string && data.riskLevel in ['LOW', 'MODERATE', 'HIGH', 'CRITICAL'];
+    }
+
+    function isValidCounterfeitReport(data) {
+      return data.keys().hasAll(['reportId', 'timestamp', 'medicineName', 'purchaseLocation', 'suspectedReason', 'reporterType'])
+        && data.reportId is string && data.reportId.size() > 0 && data.reportId.size() <= 80
+        && data.timestamp is string && data.timestamp.size() <= 40
+        && data.medicineName is string && data.medicineName.size() > 0 && data.medicineName.size() <= 150
+        && data.purchaseLocation is string && data.purchaseLocation.size() > 0 && data.purchaseLocation.size() <= 200
+        && data.suspectedReason is string && data.suspectedReason.size() > 0 && data.suspectedReason.size() <= 2500
+        && data.reporterType is string && data.reporterType in ['PATIENT', 'PHARMACIST', 'PHYSICIAN', 'DISTRIBUTOR', 'HEALTH_INSPECTOR'];
+    }
+
+    match /medicines/{medicineId} {
+      allow read: if true;
+      allow create, update: if isValidId(medicineId) && isValidMedicine(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /verificationLogs/{logId} {
+      allow read: if true;
+      allow create: if isValidId(logId) && isValidVerificationLog(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /counterfeitReports/{reportId} {
+      allow read: if true;
+      allow create: if isValidId(reportId) && isValidCounterfeitReport(request.resource.data);
+      allow update, delete: if false;
+    }
+  }
+}

@@ -2,12 +2,11 @@ import React, { useState, useRef } from "react";
 import {
   UploadCloud,
   FileCheck2,
-  AlertCircle,
   Camera,
   Sparkles,
   RefreshCw,
-  QrCode,
-  X
+  X,
+  Image as ImageIcon
 } from "lucide-react";
 import { scanImageForQr } from "../utils/qrScanner";
 
@@ -31,7 +30,7 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
 
   const handleFileProcess = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Please upload a valid image file (PNG, JPG, WEBP).");
+      alert("Please upload an image file (PNG, JPG, WEBP).");
       return;
     }
 
@@ -43,7 +42,6 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
       setDetectedQr(null);
       setIsScanningImage(true);
 
-      // Create an image object to run jsQR detection
       const img = new Image();
       img.onload = () => {
         const qrResult = scanImageForQr(img);
@@ -100,7 +98,6 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Hidden File Inputs */}
       <input
         ref={fileInputRef}
         type="file"
@@ -124,82 +121,81 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative w-full aspect-[4/3] rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center ${
+          className={`relative w-full aspect-[4/3] rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center bg-white ${
             dragActive
-              ? "border-sky-400 bg-sky-500/10 scale-[1.01]"
-              : "border-slate-700 hover:border-slate-600 bg-slate-900/60 hover:bg-slate-900/90"
-          }`}
+              ? "border-sky-500 bg-sky-50/50"
+              : "border-slate-300 hover:border-slate-400 hover:bg-slate-50/70"
+          } shadow-sm`}
         >
-          <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 shadow-lg shadow-sky-500/10">
-            <UploadCloud className="w-8 h-8" />
+          <div className="w-14 h-14 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 mb-3 shadow-xs">
+            <UploadCloud className="w-7 h-7" />
           </div>
 
-          <h3 className="text-white font-semibold text-sm mb-1">
-            Upload Medicine Image or QR Code
+          <h3 className="text-slate-900 font-semibold text-sm mb-1">
+            Upload Packaging Photo or Barcode
           </h3>
-          <p className="text-slate-400 text-xs max-w-xs mb-5">
-            Drag & drop a photo of the medicine carton, blister foil, or QR code here
+          <p className="text-slate-500 text-xs max-w-xs mb-4">
+            Drag & drop packaging photo or choose from smartphone photo library
           </p>
 
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
             >
-              Browse Files
+              Browse Photo
             </button>
             <button
               onClick={() => cameraInputRef.current?.click()}
-              className="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold shadow-md shadow-sky-500/20 flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
             >
               <Camera className="w-3.5 h-3.5" />
-              Take Photo
+              Take Snapshot
             </button>
           </div>
         </div>
       ) : (
-        <div className="w-full bg-slate-900 rounded-2xl border border-slate-800 p-4 shadow-xl">
-          {/* Preview image */}
-          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-950 border border-slate-800 mb-4 flex items-center justify-center">
+        <div className="w-full bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mb-3 flex items-center justify-center">
             <img
               src={previewUrl}
-              alt="Medicine preview"
+              alt="Medicine packaging preview"
               className="w-full h-full object-contain"
             />
             <button
               onClick={handleReset}
-              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center border border-slate-700 backdrop-blur-sm transition-colors"
+              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-sm flex items-center justify-center border border-slate-200 transition-colors"
               title="Remove image"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* QR Detection Status Banner */}
-          <div className="mb-4">
+          {/* QR Detection Status */}
+          <div className="mb-3">
             {isScanningImage ? (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700 text-xs text-slate-300">
-                <RefreshCw className="w-4 h-4 text-sky-400 animate-spin" />
-                <span>Scanning image for QR / DataMatrix code...</span>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                <RefreshCw className="w-4 h-4 text-sky-600 animate-spin" />
+                <span>Decoding 2D GS1 DataMatrix / QR from photo...</span>
               </div>
             ) : detectedQr ? (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
-                <div className="flex items-center gap-2 font-semibold mb-1">
-                  <FileCheck2 className="w-4 h-4 text-emerald-400" />
-                  <span>GS1 Barcode / QR Detected!</span>
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
+                <div className="flex items-center gap-1.5 font-bold mb-1 text-emerald-800">
+                  <FileCheck2 className="w-4 h-4 text-emerald-600" />
+                  <span>GS1 Barcode Detected</span>
                 </div>
-                <p className="font-mono text-[11px] text-slate-300 break-all bg-slate-950/60 p-2 rounded-lg border border-slate-800 mt-1">
+                <p className="font-mono text-[11px] text-slate-800 break-all bg-white p-2 rounded border border-emerald-100 mt-1">
                   {detectedQr}
                 </p>
               </div>
             ) : (
-              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-xs text-sky-300">
-                <div className="flex items-center gap-2 font-semibold mb-1">
-                  <Sparkles className="w-4 h-4 text-sky-400" />
-                  <span>Multimodal Visual Inspection Ready</span>
+              <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 text-xs text-sky-950">
+                <div className="flex items-center gap-1.5 font-bold mb-1 text-sky-800">
+                  <Sparkles className="w-4 h-4 text-sky-600" />
+                  <span>Packaging Forensic Analysis Ready</span>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  No standard QR found in photo. Gemini AI will perform visual forensic inspection of the carton print, holograms, typography, and tamper seals.
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  No standard QR found. Image will be inspected for font consistency, manufacturer logos, and hologram security features.
                 </p>
               </div>
             )}
@@ -210,24 +206,24 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
             <button
               onClick={handleReset}
               disabled={isAnalyzing}
-              className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition-colors"
+              className="py-2.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
             >
-              Choose Different
+              Change Photo
             </button>
             <button
               onClick={handleRunAnalysis}
               disabled={isAnalyzing || isScanningImage}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              className="flex-1 py-2.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors"
             >
               {isAnalyzing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Analyzing with AI...</span>
+                  <span>Verifying with AI...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 fill-slate-950" />
-                  <span>Verify Authenticity with AI</span>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Verify Authenticity</span>
                 </>
               )}
             </button>
