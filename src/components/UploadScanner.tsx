@@ -1,13 +1,4 @@
 import React, { useState, useRef } from "react";
-import {
-  UploadCloud,
-  FileCheck2,
-  Camera,
-  Sparkles,
-  RefreshCw,
-  X,
-  Image as ImageIcon
-} from "lucide-react";
 import { scanImageForQr } from "../utils/qrScanner";
 
 interface UploadScannerProps {
@@ -121,42 +112,41 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`relative w-full aspect-[4/3] rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center bg-white ${
+          className={`relative w-full aspect-[4/3] rounded border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-6 text-center bg-white ${
             dragActive
-              ? "border-sky-500 bg-sky-50/50"
-              : "border-slate-300 hover:border-slate-400 hover:bg-slate-50/70"
-          } shadow-sm`}
+              ? "border-slate-900 bg-slate-50"
+              : "border-slate-300 hover:border-slate-500 hover:bg-slate-50/50"
+          } shadow-xs`}
         >
-          <div className="w-14 h-14 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 mb-3 shadow-xs">
-            <UploadCloud className="w-7 h-7" />
+          <div className="w-10 h-10 rounded bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 font-mono text-xs font-bold mb-3">
+            IMG
           </div>
 
-          <h3 className="text-slate-900 font-semibold text-sm mb-1">
-            Upload Packaging Photo or Barcode
+          <h3 className="font-display text-slate-950 font-bold text-sm mb-1">
+            Upload Packaging Image or Barcode
           </h3>
-          <p className="text-slate-500 text-xs max-w-xs mb-4">
-            Drag & drop packaging photo or choose from smartphone photo library
+          <p className="text-slate-500 text-xs max-w-xs mb-4 leading-relaxed font-sans">
+            Drag and drop high-resolution box, blister pack, or serial label image
           </p>
 
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
+              className="px-3.5 py-2 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium transition-colors"
             >
-              Browse Photo
+              Select Image File
             </button>
             <button
               onClick={() => cameraInputRef.current?.click()}
-              className="px-3.5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 rounded bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium shadow-xs transition-colors"
             >
-              <Camera className="w-3.5 h-3.5" />
-              Take Snapshot
+              Take Photo
             </button>
           </div>
         </div>
       ) : (
-        <div className="w-full bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mb-3 flex items-center justify-center">
+        <div className="w-full bg-white rounded border border-slate-200 p-4 shadow-xs">
+          <div className="relative w-full aspect-[4/3] rounded overflow-hidden bg-slate-100 border border-slate-200 mb-3 flex items-center justify-center">
             <img
               src={previewUrl}
               alt="Medicine packaging preview"
@@ -164,38 +154,35 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
             />
             <button
               onClick={handleReset}
-              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-sm flex items-center justify-center border border-slate-200 transition-colors"
+              className="absolute top-2 right-2 px-2 py-1 rounded bg-white/95 hover:bg-white text-slate-700 text-xs font-medium shadow-xs border border-slate-300 transition-colors"
               title="Remove image"
             >
-              <X className="w-4 h-4" />
+              Remove
             </button>
           </div>
 
           {/* QR Detection Status */}
           <div className="mb-3">
             {isScanningImage ? (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600">
-                <RefreshCw className="w-4 h-4 text-sky-600 animate-spin" />
-                <span>Decoding 2D GS1 DataMatrix / QR from photo...</span>
+              <div className="p-3 rounded bg-slate-50 border border-slate-200 text-xs text-slate-700 font-mono">
+                Decoding 2D GS1 DataMatrix from image...
               </div>
             ) : detectedQr ? (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
-                <div className="flex items-center gap-1.5 font-bold mb-1 text-emerald-800">
-                  <FileCheck2 className="w-4 h-4 text-emerald-600" />
-                  <span>GS1 Barcode Detected</span>
+              <div className="p-3 rounded bg-emerald-50/70 border border-emerald-300 text-xs text-emerald-950">
+                <div className="font-bold mb-1 text-emerald-900 font-mono text-[11px]">
+                  GS1 BARCODE DECODED
                 </div>
-                <p className="font-mono text-[11px] text-slate-800 break-all bg-white p-2 rounded border border-emerald-100 mt-1">
+                <p className="font-mono text-[11px] text-slate-900 break-all bg-white p-2 rounded border border-emerald-200 mt-1">
                   {detectedQr}
                 </p>
               </div>
             ) : (
-              <div className="p-3 rounded-lg bg-sky-50 border border-sky-200 text-xs text-sky-950">
-                <div className="flex items-center gap-1.5 font-bold mb-1 text-sky-800">
-                  <Sparkles className="w-4 h-4 text-sky-600" />
-                  <span>Packaging Forensic Analysis Ready</span>
+              <div className="p-3 rounded bg-slate-50 border border-slate-200 text-xs text-slate-800">
+                <div className="font-bold mb-1 text-slate-900 font-mono text-[11px]">
+                  FORENSIC PACKAGING INSPECTION READY
                 </div>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
-                  No standard QR found. Image will be inspected for font consistency, manufacturer logos, and hologram security features.
+                  Image will be screened for typography deviations, manufacturer logo discrepancies, and security seal anomalies.
                 </p>
               </div>
             )}
@@ -206,26 +193,16 @@ export const UploadScanner: React.FC<UploadScannerProps> = ({
             <button
               onClick={handleReset}
               disabled={isAnalyzing}
-              className="py-2.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
+              className="py-2.5 px-3.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors"
             >
               Change Photo
             </button>
             <button
               onClick={handleRunAnalysis}
-              disabled={isAnalyzing || isScanningImage}
-              className="flex-1 py-2.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors"
+              disabled={isAnalyzing}
+              className="flex-1 py-2.5 px-4 rounded bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-medium text-xs shadow-xs transition-colors"
             >
-              {isAnalyzing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Verifying with AI...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Verify Authenticity</span>
-                </>
-              )}
+              {isAnalyzing ? "Screening Medicine..." : "Run Verification"}
             </button>
           </div>
         </div>
