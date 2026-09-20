@@ -10,27 +10,29 @@ import { EducationalGuide } from "./components/EducationalGuide";
 import { ReportModal } from "./components/ReportModal";
 import { VerificationResult, SampleMedicine, ManualEntryData } from "./types";
 import { MedicineRecord, logVerificationToFirestore } from "./lib/medicineDb";
+import { DEFAULT_SAMPLE_MEDICINES } from "./data/sampleMedicines";
+import { runClientRulesEngine } from "./utils/rulesEngine";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"upload" | "methodology" | "samples" | "database" | "manual">("upload");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [currentResult, setCurrentResult] = useState<VerificationResult | null>(null);
-  const [samples, setSamples] = useState<SampleMedicine[]>([]);
+  const [samples, setSamples] = useState<SampleMedicine[]>(DEFAULT_SAMPLE_MEDICINES);
   const [showGuide, setShowGuide] = useState<boolean>(false);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch sample medicines from backend
+  // Fetch sample medicines from backend (with fallback to default hardcoded)
   useEffect(() => {
     fetch("/api/sample-medicines")
       .then((res) => res.json())
       .then((data) => {
-        if (data.samples) {
+        if (data.samples && data.samples.length > 0) {
           setSamples(data.samples);
         }
       })
       .catch((err) => {
-        console.warn("Failed to fetch sample medicines, using fallback:", err);
+        console.warn("Failed to fetch sample medicines from server, using built-in defaults:", err);
       });
   }, []);
 
@@ -52,25 +54,28 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server returned error (${response.status})`);
+        throw new Error(`Server returned error (${response.status})`);
       }
 
       const data = await response.json();
       if (data.result) {
         setCurrentResult(data.result);
-        // Persist verification record to Firestore
         logVerificationToFirestore(data.result).catch((err) => {
           console.warn("Firestore background logging notice:", err);
         });
       } else {
-        throw new Error("No verification payload returned from analysis server.");
+        throw new Error("No verification payload returned.");
       }
     } catch (err: any) {
-      console.error("Verification failed:", err);
-      setErrorMessage(
-        err.message || "An unexpected error occurred while analyzing the medicine. Please retry."
-      );
+      console.warn("Server backend fetch failed (likely static Vercel deployment), running built-in client rules engine:", err);
+      // Fallback to client-side rules engine for instant offline / Vercel static support
+      try {
+        const clientResult = runClientRulesEngine(payload);
+        setCurrentResult(clientResult);
+      } catch (clientErr: any) {
+        console.error("Client verification error:", clientErr);
+        setErrorMessage(clientErr.message || "An unexpected error occurred while analyzing the medicine.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
